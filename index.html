@@ -1,41 +1,43 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lanzarin | Chat</title>
-    <link rel="icon" href="img/icon.png" type="image/png">
-    <link rel="stylesheet" href="css/index.css">
-</head>
-<body>
+    <link rel="icon" href="img/icon.png" type="image/png" />
+    <link rel="stylesheet" href="css/index.css" />
+  </head>
+  <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <div class="chat-container">
-        <div class="chat-sidebar">
-            <div class="sidebar-header">
-                Chats
-            </div>
-            <ul class="chat-list">
-                <!-- A lista de chats será preenchida dinamicamente -->
-            </ul>
+      <div class="chat-sidebar">
+        <div class="sidebar-header">Chats</div>
+        <ul class="chat-list">
+          <!-- A lista de chats será preenchida dinamicamente -->
+        </ul>
+      </div>
+      <div class="chat-main">
+        <div class="chat-header">Selecione um chat</div>
+        <div class="chat-messages">
+          <!-- Mensagens serão carregadas aqui -->
         </div>
-        <div class="chat-main">
-            <div class="chat-header">
-                Selecione um chat
-            </div>
-            <div class="chat-messages">
-                <!-- Mensagens serão carregadas aqui -->
-            </div>
-            <div class="chat-input">
-                <input type="text" id="message-input" placeholder="Digite uma mensagem">
-                <button id="send-button">Enviar</button>
-                <button id="delete-messages-button" style="display: none;">Limpar</button>
-            </div>
-            <div id="chat-options" style="display: none;">
-                <!-- O botão de apagar mensagens está agora dentro do chat-input -->
-            </div>
+        <div class="chat-input">
+          <input
+            type="text"
+            id="message-input"
+            placeholder="Digite uma mensagem"
+          />
+          <button id="send-button">Enviar</button>
+          <button id="delete-messages-button" style="display: none">
+            Limpar
+          </button>
         </div>
+        <div id="chat-options" style="display: none">
+          <!-- O botão de apagar mensagens está agora dentro do chat-input -->
+        </div>
+      </div>
     </div>
 
     <script type="module" src="js/index.js"></script>
-</body>
+  </body>
 </html>
