@@ -1,0 +1,232 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f2f5;
+}
+
+.chat-container {
+    display: flex;
+    width: 80%;
+    height: 90%;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.chat-sidebar {
+    width: 30%;
+    border-right: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+}
+
+.sidebar-header {
+    padding: 16px;
+    background-color: #007bff;
+    color: #ffffff;
+    text-align: center;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.chat-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    background-color: #f7f9fc;
+}
+
+.chat-item {
+    padding: 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+    transition: background-color 0.3s ease, padding-left 0.3s ease;
+    font-weight: 600;
+}
+
+.chat-item:hover {
+    background-color: #ebebeb;
+    padding-left: 20px;
+}
+
+.chat-main {
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+}
+
+.chat-header {
+    padding: 16px;
+    background-color: #007bff;
+    color: #ffffff;
+    text-align: center;
+    font-size: 1.1em;
+    font-weight: 600;
+    border-bottom: 1px solid #ddd;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #ebebeb;
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+    max-width: 80%;
+    margin: 8px 0;
+    padding: 12px;
+    border-radius: 12px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    word-break: break-word;
+    position: relative;
+}
+
+.message.sent {
+    align-self: flex-end;
+    background-color: #e0ffe0;
+}
+
+.message.received {
+    align-self: flex-start;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+}
+
+.chat-input {
+    padding: 12px;
+    background-color: #ffffff;
+    border-top: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#message-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    font-size: 1em;
+    outline: none;
+    background-color: #f7f9fc;
+}
+
+#message-input:focus {
+    border-color: #007bff;
+}
+
+#send-button {
+    margin-left: 12px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 20px;
+    background-color: #007bff;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+}
+
+#send-button:hover {
+    background-color: #0056b3;
+}
+
+/* Estilos existentes... */
+
+#delete-messages-button {
+    margin-left: 12px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 20px;
+    background-color: #ff4d4d;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+}
+
+#delete-messages-button:hover {
+    background-color: #cc0000;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    font-size: 1.2em;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.modal-body {
+    margin-bottom: 20px;
+}
+
+.modal-footer {
+    text-align: right;
+}
+
+.modal-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.modal-button.confirm {
+    background-color: #007bff;
+    color: #ffffff;
+}
+
+.modal-button.confirm:hover {
+    background-color: #0056b3;
+}
+
+.modal-button.cancel {
+    background-color: #ff4d4d;
+    color: #ffffff;
+}
+
+.modal-button.cancel:hover {
+    background-color: #cc0000;
+}
+
+
+
+
