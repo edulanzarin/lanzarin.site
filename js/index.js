@@ -7,9 +7,13 @@ import {
   onValue,
   push,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
-// Configuração do Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDNLluldWmJwUz0_VrWz40uTjZ6MXpjTn0",
   authDomain: "lanzarin-site.firebaseapp.com",
@@ -21,16 +25,13 @@ const firebaseConfig = {
   measurementId: "G-4QFYR3H4TL",
 };
 
-// Inicializa o Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
-const auth = getAuth(app);
+const storage = getStorage(app);
 
-// ID do administrador
 const ADMIN_ID = "r8qE9f7JkL1Pz2Tn0vWx";
 let chatIdAtual = null;
 
-// Função para carregar a lista de chats
 async function carregarChats() {
   try {
     const idUsuarioLogado = sessionStorage.getItem("id_usuario");
@@ -44,20 +45,18 @@ async function carregarChats() {
 
     if (snapshot.exists()) {
       const chatList = document.querySelector(".chat-list");
-      chatList.innerHTML = ""; // Limpa a lista de chats existente
+      chatList.innerHTML = "";
 
       snapshot.forEach((childSnapshot) => {
         const userId = childSnapshot.key;
         const userData = childSnapshot.val();
 
         if (idUsuarioLogado === ADMIN_ID || userId === ADMIN_ID) {
-          // Se o usuário logado for o admin ou o chat for com o admin
           if (userId !== idUsuarioLogado) {
-            // Exclui o próprio usuário logado da lista
             const chatItem = document.createElement("li");
             chatItem.className = "chat-item";
             chatItem.dataset.chatId = userId;
-            chatItem.textContent = userData.nome; // Apenas o nome do usuário
+            chatItem.textContent = userData.nome;
             chatList.appendChild(chatItem);
           }
         }
@@ -70,10 +69,8 @@ async function carregarChats() {
   }
 }
 
-// Função para carregar as mensagens de um chat
 function carregarMensagens(chatId) {
   const idUsuarioLogado = sessionStorage.getItem("id_usuario");
-  // Ordena os IDs para garantir um caminho consistente
   const chatPath =
     idUsuarioLogado < chatId
       ? `${idUsuarioLogado}_${chatId}`
@@ -86,15 +83,15 @@ function carregarMensagens(chatId) {
     snapshot.forEach((childSnapshot) => {
       mensagens.push(childSnapshot.val());
     });
-    mostrarMensagens(mensagens, idUsuarioLogado);
+    mostrarMensagens(mensagens, idUsuarioLogado, chatPath);
   });
 }
 
-function mostrarMensagens(mensagens, idUsuarioLogado) {
+function mostrarMensagens(mensagens, idUsuarioLogado, chatPath) {
   const chatMessages = document.querySelector(".chat-messages");
-  chatMessages.innerHTML = ""; // Limpa mensagens existentes
+  chatMessages.innerHTML = "";
 
-  mensagens.sort((a, b) => (a.id_mensagem > b.id_mensagem ? 1 : -1)); // Ordena mensagens
+  mensagens.sort((a, b) => (a.id_mensagem > b.id_mensagem ? 1 : -1));
 
   mensagens.forEach((mensagemData) => {
     const messageElement = document.createElement("div");
@@ -102,22 +99,99 @@ function mostrarMensagens(mensagens, idUsuarioLogado) {
       mensagemData.id_usuario1 === idUsuarioLogado ? "sent" : "received"
     }`;
 
-    // Descriptografa a mensagem
-    const secretKey = "sua-chave-secreta"; // Mesma chave usada para criptografia
+    const secretKey = "duduzin";
     const decryptedMessage = CryptoJS.AES.decrypt(
       mensagemData.texto,
       secretKey
     ).toString(CryptoJS.enc.Utf8);
 
-    messageElement.textContent = decryptedMessage;
+    if (decryptedMessage.trim() !== "") {
+      const messageText = document.createElement("p");
+      messageText.textContent = decryptedMessage;
+      messageElement.appendChild(messageText);
+    }
+
+    if (mensagemData.arquivo) {
+      const fileCard = document.createElement("div");
+      fileCard.className = "file-card";
+      fileCard.style.display = "flex";
+      fileCard.style.alignItems = "center";
+      fileCard.style.cursor = "pointer";
+      fileCard.style.marginTop = "10px"; // Adiciona margem superior para separar das mensagens
+
+      const fileExtension = mensagemData.arquivo.split(".").pop().toLowerCase();
+      if (
+        fileExtension === "png" ||
+        fileExtension === "jpg" ||
+        fileExtension === "jpeg"
+      ) {
+        const fileImage = document.createElement("img");
+        fileImage.style.maxWidth = "100%"; // Ajusta o tamanho conforme necessário
+        fileImage.style.height = "auto"; // Ajusta a altura automaticamente
+
+        const fileUrl = `https://firebasestorage.googleapis.com/v0/b/lanzarin-site.appspot.com/o/${encodeURIComponent(
+          chatPath + "/" + mensagemData.arquivo
+        )}?alt=media`;
+
+        fileImage.src = fileUrl;
+        fileImage.alt = "Imagem";
+        fileImage.style.cursor = "pointer";
+        fileImage.addEventListener("click", () => {
+          const imgPopup = document.createElement("div");
+          imgPopup.className = "image-popup";
+          const img = document.createElement("img");
+          img.src = fileUrl;
+          img.style.maxWidth = "90%";
+          img.style.maxHeight = "90%";
+          imgPopup.appendChild(img);
+          imgPopup.addEventListener("click", () => {
+            document.body.removeChild(imgPopup);
+          });
+          document.body.appendChild(imgPopup);
+        });
+
+        fileCard.appendChild(fileImage);
+      } else {
+        const fileIcon = document.createElement("img");
+        fileIcon.src = "img/file.png";
+        fileIcon.alt = "Arquivo";
+        fileIcon.style.width = "50px"; // Ajuste o tamanho conforme necessário
+        fileIcon.style.height = "50px"; // Ajuste o tamanho conforme necessário
+        fileIcon.style.marginRight = "10px";
+        fileCard.appendChild(fileIcon);
+
+        const fileName = document.createElement("p");
+        fileName.textContent = mensagemData.arquivo;
+        fileName.style.margin = "0";
+        fileCard.appendChild(fileName);
+      }
+
+      messageElement.appendChild(fileCard);
+    }
+
     chatMessages.appendChild(messageElement);
   });
 
-  chatMessages.scrollTop = chatMessages.scrollHeight; // Rolagem para o final
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Função para enviar uma mensagem
-function enviarMensagem(message) {
+document.addEventListener("paste", async (event) => {
+  if (event.clipboardData && event.clipboardData.items) {
+    const items = event.clipboardData.items;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith("image/")) {
+        const file = items[i].getAsFile();
+        if (file) {
+          // Envia o arquivo e adiciona ao chat
+          await enviarMensagem("", file);
+        }
+      }
+    }
+  }
+});
+
+async function enviarMensagem(message, file) {
   if (chatIdAtual === null) {
     console.error("Nenhum chat selecionado.");
     return;
@@ -129,22 +203,67 @@ function enviarMensagem(message) {
       ? `${idUsuarioLogado}_${chatIdAtual}`
       : `${chatIdAtual}_${idUsuarioLogado}`;
 
-  // Criptografa a mensagem
-  const secretKey = "sua-chave-secreta"; // Substitua por uma chave segura
+  const secretKey = "duduzin";
   const encryptedMessage = CryptoJS.AES.encrypt(message, secretKey).toString();
 
   const mensagensRef = ref(database, `mensagens/${chatPath}`);
   const newMessageRef = push(mensagensRef);
+
+  let fileId = null;
+  if (file) {
+    fileId = await enviarArquivo(file);
+  }
+
   set(newMessageRef, {
     id_mensagem: newMessageRef.key,
     id_usuario1: idUsuarioLogado,
     id_usuario2: chatIdAtual,
-    texto: encryptedMessage, // Armazena a mensagem criptografada
+    texto: encryptedMessage,
+    arquivo: fileId, // Armazena o ID do arquivo
   });
 }
 
+function gerarUUID() {
+  // Função para gerar UUID
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    var r = (Math.random() * 16) | 0,
+      v = c == "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+function enviarArquivo(file) {
+  const allowedTypes = ["image/png", "image/jpeg"];
+
+  if (!allowedTypes.includes(file.type)) {
+    console.error(
+      "Tipo de arquivo não permitido. Apenas PNG e JPG são aceitos."
+    );
+    return null;
+  }
+
+  const userId = sessionStorage.getItem("id_usuario");
+  const chatPath =
+    userId < chatIdAtual
+      ? `${userId}_${chatIdAtual}`
+      : `${chatIdAtual}_${userId}`;
+
+  // Gerar um UUID para garantir um nome único
+  const fileId = gerarUUID();
+  const fileExtension = file.name.split(".").pop();
+  const newFileName = `${fileId}.${fileExtension}`;
+
+  const fileRef = storageRef(storage, `${chatPath}/${newFileName}`);
+
+  return uploadBytes(fileRef, file)
+    .then(() => newFileName) // Retorna o novo nome do arquivo como ID
+    .catch((error) => {
+      console.error("Erro ao enviar arquivo:", error.message);
+      return null;
+    });
+}
+
 function mostrarConfirmacao(tipo, callback) {
-  // Cria o modal
   const modal = document.createElement("div");
   modal.className = "modal";
 
@@ -160,7 +279,7 @@ function mostrarConfirmacao(tipo, callback) {
   modalBody.textContent =
     tipo === "delete"
       ? "Você tem certeza que deseja apagar todas as mensagens deste chat?"
-      : ""; // Remove a mensagem de sucesso
+      : "";
 
   const modalFooter = document.createElement("div");
   modalFooter.className = "modal-footer";
@@ -200,12 +319,41 @@ function apagarMensagens(chatId) {
         : `${chatId}_${idUsuarioLogado}`;
 
     const mensagensRef = ref(database, `mensagens/${chatPath}`);
-    set(mensagensRef, null); // Remove todas as mensagens
+    set(mensagensRef, null);
 
-    // Limpa as mensagens exibidas
     document.querySelector(".chat-messages").innerHTML = "";
   });
 }
+
+// Função para mostrar o ícone e o nome da imagem
+function mostrarImagemPreview(file) {
+  const previewContainer = document.querySelector(".image-preview-container");
+  previewContainer.innerHTML = ""; // Limpa o conteúdo existente
+
+  const imgIcon = document.createElement("img");
+  imgIcon.src = "img/img-icon.png"; // Caminho para o ícone de imagem
+  imgIcon.alt = "Imagem";
+
+  const fileName = document.createElement("span");
+  fileName.className = "image-name";
+  fileName.textContent = file.name;
+
+  previewContainer.appendChild(imgIcon);
+  previewContainer.appendChild(fileName);
+}
+
+// Adiciona o evento de mudança no input de arquivos
+document.getElementById("file-input").addEventListener("change", (event) => {
+  const files = event.target.files;
+  if (files.length > 0) {
+    mostrarImagemPreview(files[0]); // Mostra o ícone e o nome do primeiro arquivo selecionado
+  }
+});
+
+// Limpa a visualização de imagem ao enviar mensagem ou limpar o input
+document.getElementById("send-button").addEventListener("click", () => {
+  document.querySelector(".image-preview-container").innerHTML = "";
+});
 
 function inicializarChat() {
   document.addEventListener("DOMContentLoaded", () => {
@@ -218,19 +366,20 @@ function inicializarChat() {
     const chatOptions = document.getElementById("chat-options");
     const sendButton = document.getElementById("send-button");
     const messageInput = document.getElementById("message-input");
+    const fileInput = document.getElementById("file-input");
 
-    let sendButtonListener = null; // Variável para armazenar o listener atual
+    let sendButtonListener = null;
 
     chatList.addEventListener("click", (event) => {
       if (event.target.classList.contains("chat-item")) {
         chatIdAtual = event.target.dataset.chatId;
         document.querySelector(".chat-header").textContent =
-          event.target.textContent; // Apenas o nome do usuário
+          event.target.textContent;
         carregarMensagens(chatIdAtual);
 
         const idUsuarioLogado = sessionStorage.getItem("id_usuario");
-        console.log("ID do usuário logado:", idUsuarioLogado); // Adicione este log
-        console.log("ID do admin:", ADMIN_ID); // Adicione este log
+        console.log("ID do usuário logado:", idUsuarioLogado);
+        console.log("ID do admin:", ADMIN_ID);
 
         if (idUsuarioLogado === ADMIN_ID) {
           chatOptions.style.display = "block";
@@ -241,36 +390,38 @@ function inicializarChat() {
           deleteMessagesButton.style.display = "none";
         }
 
-        // Remove o listener anterior do botão de envio, se existir
         if (sendButtonListener) {
           sendButton.removeEventListener("click", sendButtonListener);
         }
 
-        // Configura o evento de enviar mensagem
         sendButtonListener = () => {
           const message = messageInput.value;
-          if (message.trim() !== "") {
-            enviarMensagem(message);
-            messageInput.value = ""; // Limpar o campo de mensagem
+          const file = fileInput.files[0];
+
+          if (message.trim() !== "" || file) {
+            enviarMensagem(message, file);
+            messageInput.value = "";
+            fileInput.value = "";
           }
         };
 
         sendButton.addEventListener("click", sendButtonListener);
 
-        // Adiciona evento para enviar mensagem com a tecla Enter
         messageInput.addEventListener("keydown", (event) => {
           if (event.key === "Enter") {
             const message = messageInput.value;
-            if (message.trim() !== "") {
-              enviarMensagem(message);
-              messageInput.value = ""; // Limpar o campo de mensagem
+            const file = fileInput.files[0];
+
+            if (message.trim() !== "" || file) {
+              enviarMensagem(message, file);
+              messageInput.value = "";
+              fileInput.value = "";
             }
           }
         });
       }
     });
 
-    // Esconde o menu de opções quando o usuário clicar fora do item de chat
     document.addEventListener("click", (event) => {
       if (!event.target.classList.contains("chat-item")) {
         chatOptions.style.display = "none";

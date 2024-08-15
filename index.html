@@ -21,7 +21,17 @@
         <div class="chat-messages">
           <!-- Mensagens serão carregadas aqui -->
         </div>
+        <div class="image-preview-container">
+          <!-- Container para mostrar imagens selecionadas -->
+          <div id="image-preview" class="image-preview"></div>
+        </div>
         <div class="chat-input">
+          <label for="file-input" class="file-input-label">
+            <img src="img/clipe.png" alt="Anexar" class="clip-icon" />
+          </label>
+          <input type="file" id="file-input" multiple style="display: none" />
+          <span id="file-name"></span>
+          <!-- Exibe o nome do arquivo selecionado -->
           <input
             type="text"
             id="message-input"
