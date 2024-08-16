@@ -80,10 +80,9 @@ function carregarMensagens(chatId) {
   const mensagensRef = ref(database, `mensagens/${chatPath}`);
 
   // Remove o ouvinte anterior, se houver
-  if (mensagensListener) {
-    off(mensagensRef, "value", mensagensListener);
-  }
+  removerOuvinteMensagens();
 
+  // Define um novo ouvinte
   mensagensListener = (snapshot) => {
     const mensagens = [];
     snapshot.forEach((childSnapshot) => {
@@ -92,6 +91,7 @@ function carregarMensagens(chatId) {
     mostrarMensagens(mensagens, idUsuarioLogado, chatPath);
   };
 
+  // Adiciona o novo ouvinte
   onValue(mensagensRef, mensagensListener);
 }
 
@@ -486,7 +486,7 @@ function adicionarOuvinteEnviar() {
     }
   }
 
-  // Remover qualquer ouvinte de evento existente
+  // Remover qualquer ouvinte de evento existente antes de adicionar um novo
   sendButton.removeEventListener("click", enviarMensagemHandler);
   messageInput.removeEventListener("keydown", enviarMensagemHandler);
 
@@ -498,6 +498,20 @@ function adicionarOuvinteEnviar() {
       enviarMensagemHandler();
     }
   });
+}
+
+function removerOuvinteMensagens() {
+  console.log("Removendo ouvinte de mensagens...");
+  if (mensagensListener) {
+    const chatPath =
+      idUsuarioLogado < chatIdAtual
+        ? `${idUsuarioLogado}_${chatIdAtual}`
+        : `${chatIdAtual}_${idUsuarioLogado}`;
+    const mensagensRef = ref(database, `mensagens/${chatPath}`);
+
+    off(mensagensRef, "value", mensagensListener);
+    mensagensListener = null;
+  }
 }
 
 function formatarData(data) {
