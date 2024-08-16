@@ -184,9 +184,17 @@ document.addEventListener("paste", async (event) => {
   }
 });
 
-async function enviarMensagem(message, file) {
+function enviarMensagem(message, file) {
+  const sendButton = document.getElementById("send-button");
+  const messageInput = document.getElementById("message-input");
+  const fileInput = document.getElementById("file-input");
+
+  // Desativa o botão de envio para evitar cliques múltiplos
+  sendButton.disabled = true;
+
   if (chatIdAtual === null) {
     console.error("Nenhum chat selecionado.");
+    sendButton.disabled = false; // Reativa o botão
     return;
   }
 
@@ -204,19 +212,27 @@ async function enviarMensagem(message, file) {
 
   let fileId = null;
   if (file) {
-    fileId = await enviarArquivo(file);
+    fileId = enviarArquivo(file); // Chamado sem await
   }
 
-  await set(newMessageRef, {
+  return set(newMessageRef, {
     id_mensagem: newMessageRef.key,
     id_usuario1: idUsuarioLogado,
     id_usuario2: chatIdAtual,
     texto: encryptedMessage,
     arquivo: fileId, // Armazena o ID do arquivo
-  });
-
-  // Limpar a visualização após o envio
-  removerImagemPreview();
+  })
+    .then(() => {
+      // Limpa a visualização após o envio
+      messageInput.value = "";
+      fileInput.value = "";
+      removerImagemPreview(); // Limpa a visualização após o envio
+      sendButton.disabled = false; // Reativa o botão
+    })
+    .catch((error) => {
+      console.error("Erro ao enviar mensagem:", error.message);
+      sendButton.disabled = false; // Reativa o botão em caso de erro
+    });
 }
 
 function gerarUUID() {
@@ -380,26 +396,28 @@ function adicionarOuvinteEnviar() {
   const fileInput = document.getElementById("file-input");
 
   function enviarMensagemHandler() {
-    const message = messageInput.value;
+    const message = messageInput.value.trim(); // Remove espaços em branco
     const file = fileInput.files[0];
 
-    if (message.trim() !== "" || file) {
+    if (message !== "" || file) {
       enviarMensagem(message, file).then(() => {
+        // Limpa a visualização após o envio
         messageInput.value = "";
         fileInput.value = "";
-        removerImagemPreview(); // Limpa a visualização após o envio
+        removerImagemPreview(); // Limpa a visualização da imagem
       });
     }
   }
 
-  // Remove qualquer ouvinte de clique anterior antes de adicionar um novo
+  // Remover qualquer ouvinte de evento existente para evitar múltiplos ouvintes
   sendButton.removeEventListener("click", enviarMensagemHandler);
-  sendButton.addEventListener("click", enviarMensagemHandler);
-
-  // Remove qualquer ouvinte de tecla Enter anterior antes de adicionar um novo
   messageInput.removeEventListener("keydown", enviarMensagemHandler);
+
+  // Adicionar os ouvintes de evento
+  sendButton.addEventListener("click", enviarMensagemHandler);
   messageInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault(); // Impede a nova linha ao pressionar Enter
       enviarMensagemHandler();
     }
   });
