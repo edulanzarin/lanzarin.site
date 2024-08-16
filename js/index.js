@@ -393,27 +393,26 @@ document.getElementById("file-input").addEventListener("change", (event) => {
 function adicionarOuvinteEnviar() {
   const sendButton = document.getElementById("send-button");
   const messageInput = document.getElementById("message-input");
-  const fileInput = document.getElementById("file-input");
 
   function enviarMensagemHandler() {
-    const message = messageInput.value.trim(); // Remove espaços em branco
-    const file = fileInput.files[0];
+    const message = messageInput.value.trim();
+    const file = document.getElementById("file-input").files[0];
 
     if (message !== "" || file) {
       enviarMensagem(message, file).then(() => {
         // Limpa a visualização após o envio
         messageInput.value = "";
-        fileInput.value = "";
+        document.getElementById("file-input").value = "";
         removerImagemPreview(); // Limpa a visualização da imagem
       });
     }
   }
 
-  // Remover qualquer ouvinte de evento existente para evitar múltiplos ouvintes
+  // Remover qualquer ouvinte de evento existente
   sendButton.removeEventListener("click", enviarMensagemHandler);
   messageInput.removeEventListener("keydown", enviarMensagemHandler);
 
-  // Adicionar os ouvintes de evento
+  // Adicionar novos ouvintes de evento
   sendButton.addEventListener("click", enviarMensagemHandler);
   messageInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter" && !event.shiftKey) {
@@ -424,6 +423,7 @@ function adicionarOuvinteEnviar() {
 }
 
 function inicializarChat() {
+  console.log("Inicializando o chat..."); // Verifique quantas vezes esta linha aparece no console
   document.addEventListener("DOMContentLoaded", () => {
     carregarChats();
 
@@ -441,8 +441,6 @@ function inicializarChat() {
         carregarMensagens(chatIdAtual);
 
         const idUsuarioLogado = sessionStorage.getItem("id_usuario");
-        console.log("ID do usuário logado:", idUsuarioLogado);
-        console.log("ID do admin:", ADMIN_ID);
 
         if (idUsuarioLogado === ADMIN_ID) {
           chatOptions.style.display = "block";
