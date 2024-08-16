@@ -114,10 +114,6 @@ function mostrarMensagens(mensagens, idUsuarioLogado, chatPath) {
     if (mensagemData.arquivo) {
       const fileCard = document.createElement("div");
       fileCard.className = "file-card";
-      fileCard.style.display = "flex";
-      fileCard.style.alignItems = "center";
-      fileCard.style.cursor = "pointer";
-      fileCard.style.marginTop = "10px"; // Adiciona margem superior para separar das mensagens
 
       const fileExtension = mensagemData.arquivo.split(".").pop().toLowerCase();
       if (
@@ -126,9 +122,6 @@ function mostrarMensagens(mensagens, idUsuarioLogado, chatPath) {
         fileExtension === "jpeg"
       ) {
         const fileImage = document.createElement("img");
-        fileImage.style.maxWidth = "100%"; // Ajusta o tamanho conforme necessário
-        fileImage.style.height = "auto"; // Ajusta a altura automaticamente
-
         const fileUrl = `https://firebasestorage.googleapis.com/v0/b/lanzarin-site.appspot.com/o/${encodeURIComponent(
           chatPath + "/" + mensagemData.arquivo
         )}?alt=media`;
@@ -155,14 +148,10 @@ function mostrarMensagens(mensagens, idUsuarioLogado, chatPath) {
         const fileIcon = document.createElement("img");
         fileIcon.src = "img/file.png";
         fileIcon.alt = "Arquivo";
-        fileIcon.style.width = "50px"; // Ajuste o tamanho conforme necessário
-        fileIcon.style.height = "50px"; // Ajuste o tamanho conforme necessário
-        fileIcon.style.marginRight = "10px";
         fileCard.appendChild(fileIcon);
 
         const fileName = document.createElement("p");
         fileName.textContent = mensagemData.arquivo;
-        fileName.style.margin = "0";
         fileCard.appendChild(fileName);
       }
 

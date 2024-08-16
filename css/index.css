@@ -1,39 +1,42 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
 body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Poppins", sans-serif;
   margin: 0;
   padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #2c2f33; /* Fundo escuro neutro */
+  background-color: #1e1e1e; /* Fundo escuro para a página */
 }
 
 .chat-container {
   display: flex;
-  width: 80%;
+  width: 90%;
   height: 90%;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  background-color: #36393f; /* Fundo um pouco mais claro */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  background-color: #2d2d2d; /* Fundo do container de chat */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .chat-sidebar {
   width: 30%;
-  border-right: 1px solid #4f545c; /* Linha de divisão sutil */
+  border-right: 1px solid #444; /* Linha de divisão sutil */
   display: flex;
   flex-direction: column;
-  background-color: #36393f; /* Cor de fundo consistente */
+  background-color: #2d2d2d; /* Fundo da barra lateral */
 }
 
 .sidebar-header {
   padding: 16px;
-  background-color: #4f545c;
+  background-color: #3e3e3e; /* Fundo do cabeçalho da barra lateral */
   color: #ffffff;
   text-align: center;
-  font-size: 1.1em;
+  font-size: 1.2em;
   font-weight: 600;
+  border-bottom: 1px solid #444;
 }
 
 .chat-list {
@@ -41,20 +44,20 @@ body {
   padding: 0;
   margin: 0;
   overflow-y: auto;
-  background-color: #2c2f33; /* Fundo da lista */
+  background-color: #2d2d2d; /* Fundo da lista de chats */
 }
 
 .chat-item {
   padding: 12px;
   cursor: pointer;
-  border-bottom: 1px solid #4f545c;
+  border-bottom: 1px solid #444;
   transition: background-color 0.3s ease, padding-left 0.3s ease;
   font-weight: 600;
-  color: #e1e1e1; /* Cor do texto */
+  color: #ffffff; /* Cor do texto */
 }
 
 .chat-item:hover {
-  background-color: #3c3f43; /* Cor de hover */
+  background-color: #3e3e3e; /* Cor de hover */
   padding-left: 20px;
 }
 
@@ -62,58 +65,61 @@ body {
   width: 70%;
   display: flex;
   flex-direction: column;
-  background-color: #36393f;
+  background-color: #2d2d2d;
 }
 
 .chat-header {
   padding: 16px;
-  background-color: #4f545c;
+  background-color: #3e3e3e;
   color: #ffffff;
   text-align: center;
-  font-size: 1.1em;
+  font-size: 1.2em;
   font-weight: 600;
-  border-bottom: 1px solid #4f545c;
+  border-bottom: 1px solid #444;
 }
 
 .chat-messages {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
-  background-color: #36393f; /* Fundo do chat */
+  background-color: #2d2d2d;
   display: flex;
   flex-direction: column;
 }
 
 .message {
   max-width: 80%;
-  margin: 8px 0;
-  padding: 5px;
-  border-radius: 12px;
-  background-color: #2f3136;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  word-break: break-word;
-  position: relative;
-  color: #dcdcdc; /* Cor do texto */
+  margin: 5px 0; /* Menor margem para compactar as mensagens */
+  padding: 8px; /* Menor padding para mensagens mais compactas */
+  border-radius: 12px; /* Bordas arredondadas mais sutis */
+  background-color: #3a3a3a; /* Cor de fundo das mensagens */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Sombra mais suave */
+  color: #e0e0e0; /* Cor do texto */
+  display: flex; /* Flex para alinhar o conteúdo */
+  flex-direction: column; /* Direção vertical para o conteúdo */
+}
+
+.message p {
+  margin: 0; /* Remove margem do parágrafo para compactar */
 }
 
 .message.sent {
   align-self: flex-end;
-  background-color: #3a3b3d; /* Cor das mensagens enviadas */
+  background-color: #4a4a4a; /* Cor das mensagens enviadas */
 }
 
 .message.received {
   align-self: flex-start;
-  background-color: #2f3136; /* Cor das mensagens recebidas */
-  border: 1px solid #4f545c;
+  background-color: #3a3a3a; /* Cor das mensagens recebidas */
 }
 
 .chat-input {
   padding: 12px;
-  background-color: #36393f;
-  border-top: 1px solid #4f545c;
+  background-color: #2d2d2d;
+  border-top: 1px solid #444;
   display: flex;
   align-items: center;
-  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .file-input-label {
@@ -121,32 +127,32 @@ body {
 }
 
 .clip-icon {
-  width: 20px; /* Ajuste o tamanho conforme necessário */
+  width: 20px;
   height: 20px;
-  margin-right: 12px;
+  margin-right: 10px;
 }
 
 #message-input {
   flex: 1;
   padding: 10px;
-  border: 1px solid #4f545c;
+  border: 1px solid #444;
   border-radius: 20px;
   font-size: 1em;
   outline: none;
-  background-color: #3c3f43;
-  color: #dcdcdc; /* Cor do texto */
+  background-color: #3a3a3a;
+  color: #e0e0e0;
 }
 
 #message-input:focus {
-  border-color: #5a5f65;
+  border-color: #555;
 }
 
 #send-button {
-  margin-left: 12px;
-  padding: 10px 18px;
+  margin-left: 10px;
+  padding: 10px 20px;
   border: none;
   border-radius: 20px;
-  background-color: #5a5f65;
+  background-color: #4a90e2;
   color: #ffffff;
   cursor: pointer;
   font-size: 1em;
@@ -154,12 +160,12 @@ body {
 }
 
 #send-button:hover {
-  background-color: #4a4f55;
+  background-color: #357abd;
 }
 
 #delete-messages-button {
-  margin-left: 12px;
-  padding: 10px 18px;
+  margin-left: 10px;
+  padding: 10px 20px;
   border: none;
   border-radius: 20px;
   background-color: #e03e3e;
@@ -180,7 +186,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -188,24 +194,24 @@ body {
 }
 
 .modal-content {
-  background: #2f3136;
+  background: #2d2d2d;
   border-radius: 8px;
   padding: 20px;
   max-width: 500px;
   width: 100%;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .modal-header {
   font-size: 1.2em;
   font-weight: 600;
   margin-bottom: 10px;
-  color: #dcdcdc; /* Cor do texto */
+  color: #e0e0e0;
 }
 
 .modal-body {
   margin-bottom: 20px;
-  color: #e1e1e1; /* Cor do texto */
+  color: #d0d0d0;
 }
 
 .modal-footer {
@@ -223,12 +229,12 @@ body {
 }
 
 .modal-button.confirm {
-  background-color: #5a5f65;
+  background-color: #4a90e2;
   color: #ffffff;
 }
 
 .modal-button.confirm:hover {
-  background-color: #4a4f55;
+  background-color: #357abd;
 }
 
 .modal-button.cancel {
@@ -242,62 +248,51 @@ body {
 
 /* Estiliza a barra de rolagem para navegadores Webkit (Chrome, Safari, etc.) */
 ::-webkit-scrollbar {
-  width: 10px; /* Largura da barra de rolagem */
-  height: 10px; /* Altura da barra de rolagem horizontal */
+  width: 4px; /* Largura da barra de rolagem muito fina */
 }
 
 ::-webkit-scrollbar-track {
-  background: #2c2f33; /* Cor do fundo da trilha */
-  border-radius: 10px; /* Borda arredondada para a trilha */
+  background: transparent; /* Fundo da trilha invisível */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #4f545c; /* Cor do polegar da barra de rolagem */
+  background: #444; /* Cor do polegar da barra de rolagem */
   border-radius: 10px; /* Borda arredondada para o polegar */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #5a5f65; /* Cor do polegar ao passar o mouse */
+  background: #555; /* Cor do polegar ao passar o mouse */
 }
 
 /* Estiliza a barra de rolagem para navegadores Firefox */
 * {
   scrollbar-width: thin; /* Define a largura como fina */
-  scrollbar-color: #4f545c #2c2f33; /* Define a cor do polegar e da trilha */
+  scrollbar-color: #444 transparent; /* Define a cor do polegar e da trilha */
 }
 
-/* Estiliza a barra de rolagem para a lista de chats e mensagens */
 .chat-list,
 .chat-messages {
   scrollbar-width: thin; /* Define a largura como fina */
-  scrollbar-color: #4f545c #2c2f33; /* Define a cor do polegar e da trilha */
+  scrollbar-color: #444 transparent; /* Define a cor do polegar e da trilha */
 }
 
-.chat-list::-webkit-scrollbar,
-.chat-messages::-webkit-scrollbar {
-  width: 10px; /* Largura da barra de rolagem */
-}
-
-.chat-list::-webkit-scrollbar-track,
-.chat-messages::-webkit-scrollbar-track {
-  background: #2c2f33; /* Cor do fundo da trilha */
-  border-radius: 10px; /* Borda arredondada para a trilha */
-}
-
-.chat-list::-webkit-scrollbar-thumb,
-.chat-messages::-webkit-scrollbar-thumb {
-  background: #4f545c; /* Cor do polegar da barra de rolagem */
-  border-radius: 10px; /* Borda arredondada para o polegar */
-}
-
-.chat-list::-webkit-scrollbar-thumb:hover,
-.chat-messages::-webkit-scrollbar-thumb:hover {
-  background: #5a5f65; /* Cor do polegar ao passar o mouse */
+.file-card {
+  display: flex;
+  align-items: center;
+  margin-top: 5px; /* Margem menor para arquivos */
+  cursor: pointer;
 }
 
 .file-card img {
-  max-width: 100%;
+  max-width: 50px; /* Ajuste do tamanho das imagens de arquivos */
   height: auto;
+  margin-right: 8px; /* Espaçamento entre imagem e texto */
+}
+
+.file-card p {
+  margin: 0; /* Remove margem do nome do arquivo */
+  font-size: 12px; /* Fonte menor para o nome do arquivo */
+  color: #d0d0d0; /* Cor do texto do nome do arquivo */
 }
 
 .image-preview-container {
@@ -307,14 +302,14 @@ body {
 }
 
 .image-preview-container img {
-  width: 24px; /* Ajuste o tamanho conforme necessário */
+  width: 24px;
   height: 24px;
   margin-right: 8px;
 }
 
 .image-preview-container .image-name {
   font-size: 14px;
-  color: #dcdcdc; /* Cor do texto mais clara */
+  color: #e0e0e0;
 }
 
 /* Estilos para o visualizador de imagem */
@@ -324,20 +319,20 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.8); /* Cor de fundo escura */
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000; /* Garante que fique acima de outros elementos */
+  z-index: 1000;
 }
 
 .image-popup img {
   max-width: 90%;
   max-height: 90%;
-  border: 1px solid #fff; /* Adiciona uma borda branca */
-  border-radius: 10px; /* Adiciona bordas arredondadas */
+  border: 1px solid #ffffff;
+  border-radius: 10px;
 }
 
 .image-popup:focus {
-  outline: none; /* Remove o contorno ao clicar */
+  outline: none;
 }
