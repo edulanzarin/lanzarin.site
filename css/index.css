@@ -130,6 +130,13 @@ body {
   text-align: right; /* Alinha o timestamp à direita */
 }
 
+.message-date {
+  text-align: center;
+  color: #888;
+  font-size: 0.8em;
+  margin: 10px 0;
+}
+
 .chat-input {
   padding: 12px;
   background-color: #2d2d2d;

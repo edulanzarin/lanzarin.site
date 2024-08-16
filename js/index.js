@@ -101,7 +101,21 @@ function mostrarMensagens(mensagens, idUsuarioLogado, chatPath) {
 
   mensagens.sort((a, b) => (a.timestamp > b.timestamp ? 1 : -1)); // Ordena pelas datas
 
+  let dataUltimaMensagem = null;
+
   mensagens.forEach((mensagemData) => {
+    const dataMensagem = new Date(mensagemData.timestamp);
+    const dataMensagemFormatada = formatarData(dataMensagem);
+
+    if (!dataUltimaMensagem || dataUltimaMensagem !== dataMensagemFormatada) {
+      dataUltimaMensagem = dataMensagemFormatada;
+      // Adiciona o cabeçalho com a data
+      const dataHeader = document.createElement("div");
+      dataHeader.className = "message-date";
+      dataHeader.textContent = dataUltimaMensagem;
+      chatMessages.appendChild(dataHeader);
+    }
+
     const messageElement = document.createElement("div");
     messageElement.className = `message ${
       mensagemData.id_usuario1 === idUsuarioLogado ? "sent" : "received"
@@ -484,6 +498,11 @@ function adicionarOuvinteEnviar() {
       enviarMensagemHandler();
     }
   });
+}
+
+function formatarData(data) {
+  const opcoes = { day: "numeric", month: "long", year: "numeric" };
+  return new Intl.DateTimeFormat("pt-BR", opcoes).format(data);
 }
 
 function inicializarChat() {
