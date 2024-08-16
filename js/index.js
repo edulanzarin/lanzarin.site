@@ -6,6 +6,7 @@ import {
   get,
   onValue,
   push,
+  off,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 import {
   getStorage,
@@ -30,6 +31,7 @@ const storage = getStorage(app);
 
 const ADMIN_ID = "r8qE9f7JkL1Pz2Tn0vWx";
 let chatIdAtual = null;
+let mensagensListener = null; // Para armazenar o ouvinte de mensagens
 
 async function carregarChats() {
   try {
@@ -77,20 +79,27 @@ function carregarMensagens(chatId) {
 
   const mensagensRef = ref(database, `mensagens/${chatPath}`);
 
-  onValue(mensagensRef, (snapshot) => {
+  // Remove o ouvinte anterior, se houver
+  if (mensagensListener) {
+    off(mensagensRef, "value", mensagensListener);
+  }
+
+  mensagensListener = (snapshot) => {
     const mensagens = [];
     snapshot.forEach((childSnapshot) => {
       mensagens.push(childSnapshot.val());
     });
     mostrarMensagens(mensagens, idUsuarioLogado, chatPath);
-  });
+  };
+
+  onValue(mensagensRef, mensagensListener);
 }
 
 function mostrarMensagens(mensagens, idUsuarioLogado, chatPath) {
   const chatMessages = document.querySelector(".chat-messages");
   chatMessages.innerHTML = "";
 
-  mensagens.sort((a, b) => (a.id_mensagem > b.id_mensagem ? 1 : -1));
+  mensagens.sort((a, b) => (a.timestamp > b.timestamp ? 1 : -1)); // Ordena pelas datas
 
   mensagens.forEach((mensagemData) => {
     const messageElement = document.createElement("div");
@@ -121,7 +130,7 @@ function mostrarMensagens(mensagens, idUsuarioLogado, chatPath) {
         fileExtension === "jpeg"
       ) {
         const fileImage = document.createElement("img");
-        const fileUrl = `https://firebasestorage.googleapis.com/v0/b/lanzarin-site.appspot.com/o/${encodeURIComponent(
+        const fileUrl = `https://firebasestorage.googleapis.com/v0/b/lanzarin-site.appspot.com/o/arquivos_conversas%2F${encodeURIComponent(
           chatPath + "/" + mensagemData.arquivo
         )}?alt=media`;
 
@@ -158,6 +167,15 @@ function mostrarMensagens(mensagens, idUsuarioLogado, chatPath) {
 
       messageElement.appendChild(fileCard);
     }
+
+    const messageTime = new Date(mensagemData.timestamp).toLocaleTimeString(
+      [],
+      { hour: "2-digit", minute: "2-digit" }
+    );
+    const messageTimeElement = document.createElement("span");
+    messageTimeElement.className = "message-time";
+    messageTimeElement.textContent = messageTime;
+    messageElement.appendChild(messageTimeElement);
 
     chatMessages.appendChild(messageElement);
   });
@@ -214,12 +232,15 @@ async function enviarMensagem(message, file) {
     fileId = await enviarArquivo(file); // Espera a resolução
   }
 
+  const timestamp = new Date().toISOString(); // Adiciona timestamp
+
   return set(newMessageRef, {
     id_mensagem: newMessageRef.key,
     id_usuario1: idUsuarioLogado,
     id_usuario2: chatIdAtual,
     texto: encryptedMessage,
     arquivo: fileId,
+    timestamp: timestamp, // Adiciona o timestamp aqui
   })
     .then(() => {
       messageInput.value = "";
@@ -262,7 +283,11 @@ async function enviarArquivo(file) {
   const fileExtension = file.name.split(".").pop();
   const newFileName = `${fileId}.${fileExtension}`;
 
-  const fileRef = storageRef(storage, `${chatPath}/${newFileName}`);
+  // Atualiza o caminho para incluir a pasta "arquivos_conversas"
+  const fileRef = storageRef(
+    storage,
+    `arquivos_conversas/${chatPath}/${newFileName}`
+  );
 
   try {
     await uploadBytes(fileRef, file);
@@ -320,7 +345,7 @@ function mostrarConfirmacao(tipo, callback) {
   document.body.appendChild(modal);
 }
 
-function apagarMensagens(chatId) {
+async function apagarMensagens(chatId) {
   mostrarConfirmacao("delete", async () => {
     const idUsuarioLogado = sessionStorage.getItem("id_usuario");
     const chatPath =
@@ -329,9 +354,51 @@ function apagarMensagens(chatId) {
         : `${chatId}_${idUsuarioLogado}`;
 
     const mensagensRef = ref(database, `mensagens/${chatPath}`);
-    await set(mensagensRef, null);
 
-    document.querySelector(".chat-messages").innerHTML = "";
+    try {
+      // Obtém todas as mensagens antes de apagar
+      const snapshot = await get(mensagensRef);
+      const mensagens = [];
+      snapshot.forEach((childSnapshot) => {
+        mensagens.push(childSnapshot.val());
+      });
+
+      // Cria o conteúdo do arquivo .txt
+      const date = new Date();
+      const dateTime = `${date.getFullYear()}-${
+        date.getMonth() + 1
+      }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
+      const textoBackup = mensagens
+        .map((msg) => {
+          const decryptedMessage = CryptoJS.AES.decrypt(
+            msg.texto,
+            "duduzin"
+          ).toString(CryptoJS.enc.Utf8);
+          return `${
+            msg.id_usuario1 === idUsuarioLogado ? "Eu" : "Outro"
+          } (${new Date(msg.timestamp).toLocaleString()}): ${decryptedMessage}`;
+        })
+        .join("\n");
+
+      const backupFileName = `${dateTime}.txt`;
+      const backupFileBlob = new Blob([textoBackup], { type: "text/plain" });
+
+      // Salva o arquivo .txt no Firebase Storage
+      const backupRef = storageRef(
+        storage,
+        `backup_conversas/${chatPath}/${backupFileName}`
+      );
+
+      await uploadBytes(backupRef, backupFileBlob);
+
+      // Apaga as mensagens do Firebase Realtime Database
+      await set(mensagensRef, null);
+
+      document.querySelector(".chat-messages").innerHTML = "";
+      console.log("Backup criado e mensagens apagadas com sucesso.");
+    } catch (error) {
+      console.error("Erro ao apagar mensagens:", error.message);
+    }
   });
 }
 

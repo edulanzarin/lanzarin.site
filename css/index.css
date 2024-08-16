@@ -78,39 +78,56 @@ body {
   border-bottom: 1px solid #444;
 }
 
+/* Container das mensagens de chat */
 .chat-messages {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-  background-color: #2d2d2d;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: #2e2e2e; /* Cor de fundo noturna para área de mensagens */
+  height: calc(100vh - 120px); /* Ajuste conforme necessário */
 }
 
+/* Mensagens de chat */
 .message {
   max-width: 80%;
-  margin: 5px 0; /* Menor margem para compactar as mensagens */
-  padding: 8px; /* Menor padding para mensagens mais compactas */
-  border-radius: 12px; /* Bordas arredondadas mais sutis */
+  min-width: 150px; /* Largura mínima para evitar que o timestamp vaze */
+  margin: 5px 0;
+  padding: 10px 15px; /* Maior padding para mensagens mais legíveis */
+  border-radius: 12px; /* Bordas arredondadas */
   background-color: #3a3a3a; /* Cor de fundo das mensagens */
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Sombra mais suave */
   color: #e0e0e0; /* Cor do texto */
-  display: flex; /* Flex para alinhar o conteúdo */
-  flex-direction: column; /* Direção vertical para o conteúdo */
+  display: flex;
+  flex-direction: column; /* Alinha o conteúdo verticalmente */
+  position: relative; /* Para o posicionamento do timestamp */
+  word-wrap: break-word; /* Quebra palavras longas se necessário */
 }
 
-.message p {
-  margin: 0; /* Remove margem do parágrafo para compactar */
-}
-
+/* Mensagens enviadas pelo usuário */
 .message.sent {
   align-self: flex-end;
   background-color: #4a4a4a; /* Cor das mensagens enviadas */
 }
 
+/* Mensagens recebidas */
 .message.received {
   align-self: flex-start;
   background-color: #3a3a3a; /* Cor das mensagens recebidas */
+}
+
+/* Texto das mensagens */
+.message p {
+  margin: 0; /* Remove margem do parágrafo */
+  word-wrap: break-word; /* Quebra palavras longas */
+}
+
+/* Timestamp das mensagens */
+.message-time {
+  font-size: 0.75rem;
+  color: #b0b0b0; /* Cor do timestamp */
+  margin-top: 5px; /* Espaço entre o texto da mensagem e o timestamp */
+  text-align: right; /* Alinha o timestamp à direita */
 }
 
 .chat-input {
