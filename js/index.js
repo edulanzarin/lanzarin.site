@@ -128,8 +128,8 @@ function mostrarMensagens(mensagens, idUsuarioLogado, chatPath) {
         fileImage.src = fileUrl;
         fileImage.alt = "Imagem";
         fileImage.style.cursor = "pointer";
-        fileImage.style.maxWidth = "300px"; // Ajuste o tamanho conforme necessário
-        fileImage.style.maxHeight = "300px"; // Ajuste o tamanho conforme necessário
+        fileImage.style.maxWidth = "300px";
+        fileImage.style.maxHeight = "300px";
         fileImage.addEventListener("click", () => {
           const imgPopup = document.createElement("div");
           imgPopup.className = "image-popup";
@@ -184,17 +184,16 @@ document.addEventListener("paste", async (event) => {
   }
 });
 
-function enviarMensagem(message, file) {
+async function enviarMensagem(message, file) {
   const sendButton = document.getElementById("send-button");
   const messageInput = document.getElementById("message-input");
   const fileInput = document.getElementById("file-input");
 
-  // Desativa o botão de envio para evitar cliques múltiplos
   sendButton.disabled = true;
 
   if (chatIdAtual === null) {
     console.error("Nenhum chat selecionado.");
-    sendButton.disabled = false; // Reativa o botão
+    sendButton.disabled = false;
     return;
   }
 
@@ -212,7 +211,7 @@ function enviarMensagem(message, file) {
 
   let fileId = null;
   if (file) {
-    fileId = enviarArquivo(file); // Chamado sem await
+    fileId = await enviarArquivo(file); // Espera a resolução
   }
 
   return set(newMessageRef, {
@@ -220,18 +219,17 @@ function enviarMensagem(message, file) {
     id_usuario1: idUsuarioLogado,
     id_usuario2: chatIdAtual,
     texto: encryptedMessage,
-    arquivo: fileId, // Armazena o ID do arquivo
+    arquivo: fileId,
   })
     .then(() => {
-      // Limpa a visualização após o envio
       messageInput.value = "";
       fileInput.value = "";
-      removerImagemPreview(); // Limpa a visualização após o envio
-      sendButton.disabled = false; // Reativa o botão
+      removerImagemPreview();
+      sendButton.disabled = false;
     })
     .catch((error) => {
       console.error("Erro ao enviar mensagem:", error.message);
-      sendButton.disabled = false; // Reativa o botão em caso de erro
+      sendButton.disabled = false;
     });
 }
 
@@ -260,7 +258,6 @@ async function enviarArquivo(file) {
       ? `${userId}_${chatIdAtual}`
       : `${chatIdAtual}_${userId}`;
 
-  // Gerar um UUID para garantir um nome único
   const fileId = gerarUUID();
   const fileExtension = file.name.split(".").pop();
   const newFileName = `${fileId}.${fileExtension}`;
@@ -269,7 +266,7 @@ async function enviarArquivo(file) {
 
   try {
     await uploadBytes(fileRef, file);
-    return newFileName; // Retorna o novo nome do arquivo como ID
+    return newFileName;
   } catch (error) {
     console.error("Erro ao enviar arquivo:", error.message);
     return null;
