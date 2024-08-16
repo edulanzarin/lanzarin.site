@@ -128,13 +128,15 @@ function mostrarMensagens(mensagens, idUsuarioLogado, chatPath) {
         fileImage.src = fileUrl;
         fileImage.alt = "Imagem";
         fileImage.style.cursor = "pointer";
+        fileImage.style.maxWidth = "300px"; // Ajuste o tamanho conforme necessário
+        fileImage.style.maxHeight = "300px"; // Ajuste o tamanho conforme necessário
         fileImage.addEventListener("click", () => {
           const imgPopup = document.createElement("div");
           imgPopup.className = "image-popup";
           const img = document.createElement("img");
           img.src = fileUrl;
           img.style.maxWidth = "90%";
-          img.style.maxHeight = "90%";
+          img.style.maxHeight = "80%";
           imgPopup.appendChild(img);
           imgPopup.addEventListener("click", () => {
             document.body.removeChild(imgPopup);

@@ -152,7 +152,7 @@ body {
   padding: 10px 20px;
   border: none;
   border-radius: 20px;
-  background-color: #4a90e2;
+  background-color: #4a4a4a;
   color: #ffffff;
   cursor: pointer;
   font-size: 1em;
@@ -160,7 +160,7 @@ body {
 }
 
 #send-button:hover {
-  background-color: #357abd;
+  background-color: #404040;
 }
 
 #delete-messages-button {
@@ -284,9 +284,9 @@ body {
 }
 
 .file-card img {
-  max-width: 50px; /* Ajuste do tamanho das imagens de arquivos */
+  max-width: 150px; /* Ajuste o tamanho conforme necessário */
   height: auto;
-  margin-right: 8px; /* Espaçamento entre imagem e texto */
+  margin-right: 8px;
 }
 
 .file-card p {
@@ -328,7 +328,7 @@ body {
 
 .image-popup img {
   max-width: 90%;
-  max-height: 90%;
+  max-height: 80%;
   border: 1px solid #ffffff;
   border-radius: 10px;
 }
