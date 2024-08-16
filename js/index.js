@@ -11,7 +11,6 @@ import {
   getStorage,
   ref as storageRef,
   uploadBytes,
-  getDownloadURL,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
 const firebaseConfig = {
@@ -172,8 +171,11 @@ document.addEventListener("paste", async (event) => {
       if (items[i].type.startsWith("image/")) {
         const file = items[i].getAsFile();
         if (file) {
-          // Envia o arquivo e adiciona ao chat
-          await enviarMensagem("", file);
+          // Exibe o preview da imagem
+          mostrarImagemPreview(file);
+          // Atualiza o input de arquivos para incluir o arquivo
+          document.getElementById("file-input").files =
+            event.clipboardData.files;
         }
       }
     }
@@ -203,13 +205,16 @@ async function enviarMensagem(message, file) {
     fileId = await enviarArquivo(file);
   }
 
-  set(newMessageRef, {
+  await set(newMessageRef, {
     id_mensagem: newMessageRef.key,
     id_usuario1: idUsuarioLogado,
     id_usuario2: chatIdAtual,
     texto: encryptedMessage,
     arquivo: fileId, // Armazena o ID do arquivo
   });
+
+  // Limpar a visualização após o envio
+  removerImagemPreview();
 }
 
 function gerarUUID() {
@@ -221,7 +226,7 @@ function gerarUUID() {
   });
 }
 
-function enviarArquivo(file) {
+async function enviarArquivo(file) {
   const allowedTypes = ["image/png", "image/jpeg"];
 
   if (!allowedTypes.includes(file.type)) {
@@ -244,12 +249,13 @@ function enviarArquivo(file) {
 
   const fileRef = storageRef(storage, `${chatPath}/${newFileName}`);
 
-  return uploadBytes(fileRef, file)
-    .then(() => newFileName) // Retorna o novo nome do arquivo como ID
-    .catch((error) => {
-      console.error("Erro ao enviar arquivo:", error.message);
-      return null;
-    });
+  try {
+    await uploadBytes(fileRef, file);
+    return newFileName; // Retorna o novo nome do arquivo como ID
+  } catch (error) {
+    console.error("Erro ao enviar arquivo:", error.message);
+    return null;
+  }
 }
 
 function mostrarConfirmacao(tipo, callback) {
@@ -300,7 +306,7 @@ function mostrarConfirmacao(tipo, callback) {
 }
 
 function apagarMensagens(chatId) {
-  mostrarConfirmacao("delete", () => {
+  mostrarConfirmacao("delete", async () => {
     const idUsuarioLogado = sessionStorage.getItem("id_usuario");
     const chatPath =
       idUsuarioLogado < chatId
@@ -308,7 +314,7 @@ function apagarMensagens(chatId) {
         : `${chatId}_${idUsuarioLogado}`;
 
     const mensagensRef = ref(database, `mensagens/${chatPath}`);
-    set(mensagensRef, null);
+    await set(mensagensRef, null);
 
     document.querySelector(".chat-messages").innerHTML = "";
   });
@@ -319,30 +325,83 @@ function mostrarImagemPreview(file) {
   const previewContainer = document.querySelector(".image-preview-container");
   previewContainer.innerHTML = ""; // Limpa o conteúdo existente
 
-  const imgIcon = document.createElement("img");
-  imgIcon.src = "img/img-icon.png"; // Caminho para o ícone de imagem
-  imgIcon.alt = "Imagem";
+  const img = document.createElement("img");
+  img.src = URL.createObjectURL(file); // Cria URL para visualização local
+  img.alt = "Imagem";
+  img.style.maxWidth = "200px"; // Ajusta o tamanho conforme necessário
+  img.style.maxHeight = "200px"; // Ajusta o tamanho conforme necessário
 
   const fileName = document.createElement("span");
   fileName.className = "image-name";
-  fileName.textContent = file.name;
+  fileName.textContent = file.name || "Print"; // Usa nome padrão se não houver nome
 
-  previewContainer.appendChild(imgIcon);
+  previewContainer.appendChild(img);
   previewContainer.appendChild(fileName);
+
+  // Mostrar o botão de remover
+  const removeButton = document.getElementById("remove-preview-button");
+  if (removeButton) {
+    removeButton.style.display = "block";
+  }
 }
+
+// Função para remover o preview da imagem
+function removerImagemPreview() {
+  const previewContainer = document.querySelector(".image-preview-container");
+  previewContainer.innerHTML = ""; // Limpa a visualização da imagem
+
+  // Ocultar o botão de remover
+  const removeButton = document.getElementById("remove-preview-button");
+  if (removeButton) {
+    removeButton.style.display = "none";
+  }
+}
+
+// Adiciona o evento de clique ao botão de remover imagem
+document
+  .getElementById("remove-preview-button")
+  .addEventListener("click", removerImagemPreview);
 
 // Adiciona o evento de mudança no input de arquivos
 document.getElementById("file-input").addEventListener("change", (event) => {
   const files = event.target.files;
   if (files.length > 0) {
     mostrarImagemPreview(files[0]); // Mostra o ícone e o nome do primeiro arquivo selecionado
+  } else {
+    removerImagemPreview(); // Remove a visualização se nenhum arquivo for selecionado
   }
 });
 
-// Limpa a visualização de imagem ao enviar mensagem ou limpar o input
-document.getElementById("send-button").addEventListener("click", () => {
-  document.querySelector(".image-preview-container").innerHTML = "";
-});
+function adicionarOuvinteEnviar() {
+  const sendButton = document.getElementById("send-button");
+  const messageInput = document.getElementById("message-input");
+  const fileInput = document.getElementById("file-input");
+
+  function enviarMensagemHandler() {
+    const message = messageInput.value;
+    const file = fileInput.files[0];
+
+    if (message.trim() !== "" || file) {
+      enviarMensagem(message, file).then(() => {
+        messageInput.value = "";
+        fileInput.value = "";
+        removerImagemPreview(); // Limpa a visualização após o envio
+      });
+    }
+  }
+
+  // Remove qualquer ouvinte de clique anterior antes de adicionar um novo
+  sendButton.removeEventListener("click", enviarMensagemHandler);
+  sendButton.addEventListener("click", enviarMensagemHandler);
+
+  // Remove qualquer ouvinte de tecla Enter anterior antes de adicionar um novo
+  messageInput.removeEventListener("keydown", enviarMensagemHandler);
+  messageInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      enviarMensagemHandler();
+    }
+  });
+}
 
 function inicializarChat() {
   document.addEventListener("DOMContentLoaded", () => {
@@ -353,11 +412,6 @@ function inicializarChat() {
       "delete-messages-button"
     );
     const chatOptions = document.getElementById("chat-options");
-    const sendButton = document.getElementById("send-button");
-    const messageInput = document.getElementById("message-input");
-    const fileInput = document.getElementById("file-input");
-
-    let sendButtonListener = null;
 
     chatList.addEventListener("click", (event) => {
       if (event.target.classList.contains("chat-item")) {
@@ -379,35 +433,7 @@ function inicializarChat() {
           deleteMessagesButton.style.display = "none";
         }
 
-        if (sendButtonListener) {
-          sendButton.removeEventListener("click", sendButtonListener);
-        }
-
-        sendButtonListener = () => {
-          const message = messageInput.value;
-          const file = fileInput.files[0];
-
-          if (message.trim() !== "" || file) {
-            enviarMensagem(message, file);
-            messageInput.value = "";
-            fileInput.value = "";
-          }
-        };
-
-        sendButton.addEventListener("click", sendButtonListener);
-
-        messageInput.addEventListener("keydown", (event) => {
-          if (event.key === "Enter") {
-            const message = messageInput.value;
-            const file = fileInput.files[0];
-
-            if (message.trim() !== "" || file) {
-              enviarMensagem(message, file);
-              messageInput.value = "";
-              fileInput.value = "";
-            }
-          }
-        });
+        adicionarOuvinteEnviar();
       }
     });
 
