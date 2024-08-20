@@ -30,6 +30,17 @@ const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const storage = getStorage(app);
 
+// Função para criptografar uma mensagem
+function criptografarMensagem(mensagem, chaveSecreta) {
+  return CryptoJS.AES.encrypt(mensagem, chaveSecreta).toString();
+}
+
+// Função para descriptografar uma mensagem
+function descriptografarMensagem(mensagemCriptografada, chaveSecreta) {
+  const bytes = CryptoJS.AES.decrypt(mensagemCriptografada, chaveSecreta);
+  return bytes.toString(CryptoJS.enc.Utf8);
+}
+
 // Gera um ID de conversa consistente
 function gerarIdConversa(id1, id2) {
   return id1 < id2 ? `${id1}_${id2}` : `${id2}_${id1}`;
@@ -163,9 +174,10 @@ async function abrirConversa(id, nome, foto) {
 
   const contactBar = document.querySelector(".chat .contact.bar");
   const messagesContainer = document.querySelector(".messages");
+  const chaveSecreta = "sua-chave-secreta"; // Deve ser a mesma chave usada para criptografia
 
   contactBar.querySelector(".name").textContent = nome;
-  contactBar.querySelector(".pic").dataset.id = id; // Salva o ID do contato clicado
+  contactBar.querySelector(".pic").dataset.id = id;
   if (foto) {
     const fotoRef = storageRef(storage, `fotos_perfil/${foto}`);
     try {
@@ -183,7 +195,6 @@ async function abrirConversa(id, nome, foto) {
     `conversas/${gerarIdConversa(idUsuarioLogado, id)}`
   );
 
-  // Ouvir atualizações em tempo real para as mensagens
   onValue(mensagensRef, (snapshot) => {
     messagesContainer.innerHTML = "";
     if (snapshot.exists()) {
@@ -193,7 +204,6 @@ async function abrirConversa(id, nome, foto) {
         const dataMensagem = formatarData(msg.timestamp);
         const horaMensagem = formatarHora(msg.timestamp);
 
-        // Verifica se é a primeira mensagem do dia
         if (dataMensagem !== ultimaData) {
           const dataDiv = document.createElement("div");
           dataDiv.classList.add("date-separator");
@@ -202,9 +212,13 @@ async function abrirConversa(id, nome, foto) {
           ultimaData = dataMensagem;
         }
 
+        const mensagemDescriptografada = descriptografarMensagem(
+          msg.conteudo,
+          chaveSecreta
+        );
         const msgDiv = document.createElement("div");
         msgDiv.classList.add("message", msg.from === id ? "stark" : "parker");
-        msgDiv.innerHTML = `<span class="message-content">${msg.conteudo}</span><span class="message-time">${horaMensagem}</span>`;
+        msgDiv.innerHTML = `<span class="message-content">${mensagemDescriptografada}</span><span class="message-time">${horaMensagem}</span>`;
         messagesContainer.appendChild(msgDiv);
       }
     } else {
@@ -219,6 +233,7 @@ async function enviarMensagem(conteudo) {
   const idUsuarioLogado = sessionStorage.getItem("id_usuario");
   const idContato = document.querySelector(".chat .contact.bar .pic").dataset
     .id;
+  const chaveSecreta = "sua-chave-secreta"; // Defina uma chave secreta adequada
 
   if (!idUsuarioLogado || !idContato) {
     console.error("ID do usuário ou do contato não encontrado.");
@@ -229,9 +244,11 @@ async function enviarMensagem(conteudo) {
   const mensagensRef = ref(database, `conversas/${idConversa}`);
   const novaMensagemRef = push(mensagensRef); // Gera uma nova referência para a mensagem
 
+  const mensagemCriptografada = criptografarMensagem(conteudo, chaveSecreta);
+
   const mensagem = {
     id: novaMensagemRef.key,
-    conteudo: conteudo,
+    conteudo: mensagemCriptografada,
     from: idUsuarioLogado,
     to: idContato,
     timestamp: Date.now(),
@@ -240,7 +257,6 @@ async function enviarMensagem(conteudo) {
   try {
     await set(novaMensagemRef, mensagem);
     console.log("Mensagem enviada com sucesso.");
-    // A interface será atualizada em tempo real pelo listener onValue
   } catch (error) {
     console.error("Erro ao enviar mensagem:", error);
   }
