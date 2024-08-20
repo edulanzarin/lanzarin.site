@@ -345,6 +345,13 @@ html {
   border-radius: 50%;
 }
 
+.profile-container {
+  width: 100%;
+  justify-content: end;
+  display: flex;
+  align-items: center;
+}
+
 /* Estilo do botão de perfil */
 .profile-button {
   position: relative;
@@ -359,7 +366,7 @@ html {
   overflow: hidden;
   transition: background-color 0.3s;
   margin-top: 1rem;
-  margin-left: 1rem;
+  margin-right: 1rem;
 }
 
 .profile-button:hover {
