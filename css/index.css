@@ -194,6 +194,10 @@ html {
   max-width: 66%;
   box-shadow: 0 0 2rem rgba(0, 0, 0, 0.075),
     0rem 1rem 1rem -1rem rgba(0, 0, 0, 0.1);
+  white-space: pre-wrap; /* Preserva quebras de linha e espaço, mas permite a quebra automática de linhas */
+  word-wrap: break-word; /* Permite a quebra de palavras longas */
+  word-break: break-word; /* Permite a quebra de palavras em qualquer ponto */
+  overflow-wrap: break-word; /* Faz com que palavras longas sejam quebradas para evitar estouro */
 }
 
 /* Estilo das mensagens enviadas */
