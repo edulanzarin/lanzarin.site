@@ -1,54 +1,53 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lanzarin | Chat</title>
-    <link rel="icon" href="img/icon.png" type="image/png" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css"
+    />
     <link rel="stylesheet" href="css/index.css" />
+    <link rel="icon" href="img/icon.png" type="image/png" />
   </head>
   <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <div class="chat-container">
-      <div class="chat-sidebar">
-        <div class="sidebar-header">Conversas</div>
-        <ul class="chat-list">
-          <!-- A lista de chats será preenchida dinamicamente -->
-        </ul>
+    <!-- partial:index.partial.html -->
+    <div class="center">
+      <div class="contacts">
+        <i class="fas fa-bars fa-2x"></i>
+        <!-- Contatos serão carregados aqui via JS -->
       </div>
-      <div class="chat-main">
-        <div class="chat-header">Selecione uma conversa</div>
-        <div class="chat-messages">
-          <!-- Mensagens serão carregadas aqui -->
+      <div class="chat">
+        <div class="contact bar">
+          <div class="pic" data-id="ID_DO_CONTATO"></div>
+          <div class="name"></div>
+          <div class="seen"></div>
         </div>
-        <div class="image-preview-container">
-          <!-- Container para mostrar imagens selecionadas -->
-          <div id="image-preview" class="image-preview"></div>
-          <button id="remove-preview-button" style="display: none">X</button>
+        <div class="messages" id="chat">
+          <!-- Mensagens serão carregadas aqui via JS -->
         </div>
-        <div class="chat-input">
-          <label for="file-input" class="file-input-label">
-            <img src="img/clipe.png" alt="Anexar" class="clip-icon" />
-          </label>
-          <input type="file" id="file-input" multiple style="display: none" />
-          <span id="file-name"></span>
-          <!-- Exibe o nome do arquivo selecionado -->
-          <input
-            type="text"
-            id="message-input"
-            placeholder="Digite uma mensagem"
-          />
-          <button id="send-button">Enviar</button>
-          <button id="delete-messages-button" style="display: none">
-            Limpar
-          </button>
-        </div>
-        <div id="chat-options" style="display: none">
-          <!-- O botão de apagar mensagens está agora dentro do chat-input -->
+        <div class="input">
+          <!-- Adiciona um seletor de emojis oculto -->
+          <div class="emoji-picker" style="display: none">
+            <span class="emoji" data-emoji="😊">😊</span>
+            <span class="emoji" data-emoji="😂">😂</span>
+            <span class="emoji" data-emoji="😍">😍</span>
+            <span class="emoji" data-emoji="😢">😢</span>
+            <!-- Adicione mais emojis conforme necessário -->
+          </div>
+
+          <i class="fas fa-camera"></i><i class="far fa-laugh-beam"></i
+          ><input placeholder="Digite sua mensagem" type="text" />
         </div>
       </div>
     </div>
 
+    <!-- partial -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script type="module" src="js/index.js"></script>
   </body>
 </html>
