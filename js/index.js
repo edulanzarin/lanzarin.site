@@ -5,11 +5,13 @@ import {
   get,
   set,
   push,
-  onValue, // Importa a função onValue
+  onValue,
+  update,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 import {
   getStorage,
   ref as storageRef,
+  uploadBytesResumable,
   getDownloadURL,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
@@ -31,6 +33,13 @@ const storage = getStorage(app);
 // Gera um ID de conversa consistente
 function gerarIdConversa(id1, id2) {
   return id1 < id2 ? `${id1}_${id2}` : `${id2}_${id1}`;
+}
+
+function truncarMensagem(mensagem, tamanhoMaximo) {
+  if (mensagem.length > tamanhoMaximo) {
+    return mensagem.substring(0, tamanhoMaximo) + "...";
+  }
+  return mensagem;
 }
 
 async function carregarContatos() {
@@ -100,8 +109,10 @@ async function carregarContatos() {
             const conversas = snapshot.val();
             const mensagens = Object.values(conversas);
             const ultimaMensagem = mensagens[mensagens.length - 1];
+            const tamanhoMaximo = 50; // Defina o tamanho máximo desejado
+
             messageDiv.textContent = ultimaMensagem
-              ? ultimaMensagem.conteudo
+              ? truncarMensagem(ultimaMensagem.conteudo, tamanhoMaximo)
               : "Sem mensagens ainda.";
           } else {
             messageDiv.textContent = "Sem mensagens ainda.";
@@ -279,3 +290,185 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+  const profileButton = document.getElementById("profileButton");
+  const profileModal = document.getElementById("profileModal");
+  const closeModal = document.getElementById("closeModal");
+  const fileInput = document.getElementById("fileInput");
+  const modalPhotoButton = document.querySelector(".modal-photo-button");
+  const profileImage = document.getElementById("profileImage");
+  const contactIdInput = document.getElementById("contactName");
+  const modalAddContactButton = document.getElementById(
+    "modalAddContactButton"
+  );
+  const modalTitle = document.getElementById("modalTitle");
+
+  // Verifica se os elementos existem
+  if (
+    profileButton &&
+    profileModal &&
+    closeModal &&
+    fileInput &&
+    modalPhotoButton &&
+    profileImage &&
+    contactIdInput &&
+    modalAddContactButton &&
+    modalTitle
+  ) {
+    // Mostra o modal quando o botão de perfil é clicado
+    profileButton.addEventListener("click", () => {
+      const idUsuarioLogado = sessionStorage.getItem("id_usuario");
+      if (idUsuarioLogado) {
+        modalTitle.textContent = `${idUsuarioLogado}`; // Define o título do modal
+      } else {
+        console.error("ID do usuário logado não encontrado.");
+      }
+      profileModal.style.display = "flex"; // Mostra o modal
+    });
+
+    // Fecha o modal quando o botão de fechar é clicado
+    closeModal.addEventListener("click", () => {
+      profileModal.style.display = "none"; // Oculta o modal
+    });
+
+    // Fecha o modal se o usuário clicar fora dele
+    window.addEventListener("click", (event) => {
+      if (event.target === profileModal) {
+        profileModal.style.display = "none";
+      }
+    });
+
+    // Abre o seletor de arquivos quando a imagem no modal for clicada
+    modalPhotoButton.addEventListener("click", () => {
+      fileInput.click(); // Abre o seletor de arquivos
+    });
+
+    // Atualiza a imagem de perfil com a nova foto selecionada e faz o upload
+    fileInput.addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const idUsuarioLogado = sessionStorage.getItem("id_usuario");
+        if (!idUsuarioLogado) {
+          console.error("ID do usuário logado não encontrado.");
+          return;
+        }
+
+        try {
+          const nomeAleatorio = `${Date.now()}_${file.name}`;
+          const fotoRef = storageRef(storage, `fotos_perfil/${nomeAleatorio}`);
+
+          const uploadTask = uploadBytesResumable(fotoRef, file);
+
+          uploadTask.on(
+            "state_changed",
+            (snapshot) => {
+              const progress =
+                (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              console.log(`Upload is ${progress}% done`);
+            },
+            (error) => {
+              console.error("Erro ao fazer upload da imagem:", error);
+            },
+            async () => {
+              try {
+                const url = await getDownloadURL(fotoRef);
+
+                modalPhotoButton.src = url;
+                profileImage.src = url;
+
+                const usuarioRef = ref(database, `contatos/${idUsuarioLogado}`);
+                await update(usuarioRef, { foto: nomeAleatorio });
+
+                console.log("Imagem de perfil atualizada com sucesso.");
+                profileModal.style.display = "none"; // Fecha o modal após o upload
+              } catch (error) {
+                console.error("Erro ao obter a URL da imagem:", error);
+              }
+            }
+          );
+        } catch (error) {
+          console.error("Erro ao atualizar a imagem de perfil:", error);
+        }
+      }
+    });
+
+    // Adiciona contato diretamente pelo ID
+    modalAddContactButton.addEventListener("click", () => {
+      const contactId = contactIdInput.value;
+      if (contactId) {
+        adicionarContato(contactId);
+        contactIdInput.value = ""; // Limpa o campo após adicionar
+        profileModal.style.display = "none"; // Fecha o modal após adicionar contato
+      } else {
+        console.error("ID do contato não fornecido.");
+      }
+    });
+  } else {
+    console.error("Um ou mais elementos não foram encontrados.");
+  }
+});
+
+// Função para carregar a imagem de perfil do usuário logado
+async function carregarImagemPerfil() {
+  try {
+    const idUsuarioLogado = sessionStorage.getItem("id_usuario");
+    if (!idUsuarioLogado) {
+      throw new Error("ID do usuário logado não encontrado.");
+    }
+
+    const usuarioRef = ref(database, `contatos/${idUsuarioLogado}`);
+    const snapshot = await get(usuarioRef);
+
+    if (!snapshot.exists()) {
+      console.error("Usuário não encontrado.");
+      return;
+    }
+
+    const usuarioData = snapshot.val();
+    const fotoNome = usuarioData.foto;
+
+    if (fotoNome) {
+      const fotoRef = storageRef(storage, `fotos_perfil/${fotoNome}`);
+      try {
+        const url = await getDownloadURL(fotoRef);
+
+        document.getElementById("profileImage").src = url;
+        document.getElementById("modalProfileImage").src = url;
+      } catch (error) {
+        console.error("Erro ao carregar a foto de perfil:", error);
+      }
+    }
+  } catch (error) {
+    console.error("Erro ao carregar a imagem de perfil:", error);
+  }
+}
+
+// Carregar a imagem de perfil na inicialização
+document.addEventListener("DOMContentLoaded", carregarImagemPerfil);
+
+// Função para adicionar contato
+async function adicionarContato(idContato) {
+  const idUsuarioLogado = sessionStorage.getItem("id_usuario");
+  if (!idUsuarioLogado) {
+    console.error("ID do usuário logado não encontrado.");
+    return;
+  }
+
+  try {
+    // Referência para o nó de contatos comuns do usuário
+    const contatosComunsRef = ref(
+      database,
+      `contatos_comuns/${idUsuarioLogado}`
+    );
+
+    // Adiciona o ID do contato ao nó de contatos comuns
+    await update(contatosComunsRef, {
+      [idContato]: true, // Adiciona o ID do contato com valor true
+    });
+
+    console.log(`Contato ${idContato} adicionado aos contatos comuns.`);
+  } catch (error) {
+    console.error("Erro ao adicionar o contato:", error);
+  }
+}

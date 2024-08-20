@@ -15,6 +15,39 @@
     <link rel="icon" href="img/icon.png" type="image/png" />
   </head>
   <body>
+    <!-- Botão de perfil -->
+    <div class="profile-button" id="profileButton">
+      <img id="profileImage" src="" alt="Profile Picture" />
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="profileModal">
+      <div class="modal-content">
+        <span class="close-button" id="closeModal">&times;</span>
+        <!-- Título do Modal -->
+        <h4 id="modalTitle"></h4>
+        <div class="modal-photo-container">
+          <img
+            id="modalProfileImage"
+            alt="Profile Picture"
+            class="modal-photo-button"
+          />
+          <input
+            type="file"
+            id="fileInput"
+            accept="image/*"
+            style="display: none"
+          />
+        </div>
+        <div class="modal-add-contact">
+          <input type="text" id="contactName" placeholder="ID do Contato" />
+          <button class="modal-add-button" id="modalAddContactButton">
+            Adicionar Contato
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- partial:index.partial.html -->
     <div class="center">
       <div class="contacts">
@@ -40,8 +73,8 @@
             <!-- Adicione mais emojis conforme necessário -->
           </div>
 
-          <i class="fas fa-camera"></i><i class="far fa-laugh-beam"></i
-          ><input placeholder="Digite sua mensagem" type="text" />
+          <i class="fas fa-camera"></i><i class="far fa-laugh-beam"></i>
+          <input placeholder="Digite sua mensagem" type="text" />
         </div>
       </div>
     </div>
