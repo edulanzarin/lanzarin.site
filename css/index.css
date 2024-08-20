@@ -113,6 +113,7 @@ html {
   box-shadow: 0 0 8rem 0 rgba(0, 0, 0, 0.1),
     2rem 2rem 4rem -3rem rgba(0, 0, 0, 0.5);
   transform-origin: left center; /* Define o ponto de origem da transformação */
+  overflow-y: auto; /* Adiciona uma barra de rolagem vertical */
 }
 
 .contacts h2 {
