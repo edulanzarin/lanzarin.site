@@ -41,75 +41,84 @@ async function carregarContatos() {
       return;
     }
 
-    const contatosRef = ref(database, "contatos");
-    const snapshot = await get(contatosRef);
+    // Referência ao nó de contatos comuns do usuário
+    const contatosComunsRef = ref(
+      database,
+      `contatos_comuns/${idUsuarioLogado}`
+    );
+    const snapshot = await get(contatosComunsRef);
 
     if (!snapshot.exists()) {
-      console.log("Nenhum contato encontrado.");
+      console.log("Nenhum contato comum encontrado.");
       return;
     }
 
-    const contatos = snapshot.val();
+    const contatosComuns = snapshot.val();
     const container = document.querySelector(".contacts");
     container.innerHTML = '<i class="fas fa-bars fa-2x"></i><h2>Contatos</h2>';
 
-    for (const [id, dados] of Object.entries(contatos)) {
-      if (id === idUsuarioLogado) continue;
+    for (const [id, dados] of Object.entries(contatosComuns)) {
+      const contatoRef = ref(database, `contatos/${id}`);
+      const contatoSnapshot = await get(contatoRef);
 
-      const { nome, foto } = dados;
-      const contatoDiv = document.createElement("div");
-      contatoDiv.classList.add("contact");
-      contatoDiv.dataset.id = id; // Armazena o ID do contato
+      if (contatoSnapshot.exists()) {
+        const { nome, foto } = contatoSnapshot.val();
+        const contatoDiv = document.createElement("div");
+        contatoDiv.classList.add("contact");
+        contatoDiv.dataset.id = id; // Armazena o ID do contato
 
-      const picDiv = document.createElement("div");
-      picDiv.classList.add("pic");
-      picDiv.setAttribute("data-id", id);
+        const picDiv = document.createElement("div");
+        picDiv.classList.add("pic");
+        picDiv.setAttribute("data-id", id);
 
-      if (foto) {
-        const fotoRef = storageRef(storage, `fotos_perfil/${foto}`);
-        try {
-          const url = await getDownloadURL(fotoRef);
-          picDiv.style.backgroundImage = `url(${url})`;
-        } catch (error) {
-          console.log("Erro ao carregar a foto:", error);
-          picDiv.style.backgroundImage = `url('url-da-imagem-padrao')`;
+        if (foto) {
+          const fotoRef = storageRef(storage, `fotos_perfil/${foto}`);
+          try {
+            const url = await getDownloadURL(fotoRef);
+            picDiv.style.backgroundImage = `url(${url})`;
+          } catch (error) {
+            console.log("Erro ao carregar a foto:", error);
+            picDiv.style.backgroundImage = `url('url-da-imagem-padrao')`;
+          }
         }
+
+        const badgeDiv = document.createElement("div");
+
+        const nameDiv = document.createElement("div");
+        nameDiv.classList.add("name");
+        nameDiv.textContent = nome;
+
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("message");
+
+        // Atualizar a última mensagem em tempo real
+        const idConversa = gerarIdConversa(idUsuarioLogado, id);
+        const conversasRef = ref(database, `conversas/${idConversa}`);
+
+        onValue(conversasRef, (snapshot) => {
+          if (snapshot.exists()) {
+            const conversas = snapshot.val();
+            const mensagens = Object.values(conversas);
+            const ultimaMensagem = mensagens[mensagens.length - 1];
+            messageDiv.textContent = ultimaMensagem
+              ? ultimaMensagem.conteudo
+              : "Sem mensagens ainda.";
+          } else {
+            messageDiv.textContent = "Sem mensagens ainda.";
+          }
+        });
+
+        contatoDiv.appendChild(picDiv);
+        contatoDiv.appendChild(badgeDiv);
+        contatoDiv.appendChild(nameDiv);
+        contatoDiv.appendChild(messageDiv);
+
+        contatoDiv.addEventListener("click", () =>
+          abrirConversa(id, nome, foto)
+        );
+
+        container.appendChild(contatoDiv);
       }
-
-      const badgeDiv = document.createElement("div");
-
-      const nameDiv = document.createElement("div");
-      nameDiv.classList.add("name");
-      nameDiv.textContent = nome;
-
-      const messageDiv = document.createElement("div");
-      messageDiv.classList.add("message");
-
-      // Atualizar a última mensagem em tempo real
-      const idConversa = gerarIdConversa(idUsuarioLogado, id);
-      const conversasRef = ref(database, `conversas/${idConversa}`);
-
-      onValue(conversasRef, (snapshot) => {
-        if (snapshot.exists()) {
-          const conversas = snapshot.val();
-          const mensagens = Object.values(conversas);
-          const ultimaMensagem = mensagens[mensagens.length - 1];
-          messageDiv.textContent = ultimaMensagem
-            ? ultimaMensagem.conteudo
-            : "Sem mensagens ainda.";
-        } else {
-          messageDiv.textContent = "Sem mensagens ainda.";
-        }
-      });
-
-      contatoDiv.appendChild(picDiv);
-      contatoDiv.appendChild(badgeDiv);
-      contatoDiv.appendChild(nameDiv);
-      contatoDiv.appendChild(messageDiv);
-
-      contatoDiv.addEventListener("click", () => abrirConversa(id, nome, foto));
-
-      container.appendChild(contatoDiv);
     }
   } catch (error) {
     console.error("Erro ao carregar contatos:", error);
