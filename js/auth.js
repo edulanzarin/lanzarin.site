@@ -56,7 +56,7 @@ export async function verificarUsuario() {
 // Função para lidar com o login
 export async function loginUsuario(usuario, senha) {
   try {
-    const usuariosRef = ref(database, "contatos");
+    const usuariosRef = ref(database, "usuarios");
     const snapshot = await get(usuariosRef);
 
     if (snapshot.exists()) {
